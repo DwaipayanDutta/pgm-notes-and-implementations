@@ -1,0 +1,4 @@
+include LICENSE README.md
+recursive-include tests *.py
+recursive-include examples *.py
+include notebooks/pgm_handbook_demo.ipynb
