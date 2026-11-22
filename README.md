@@ -17,37 +17,35 @@ graph LR
 
 ## Table of Contents
 
-* [Overview & Motivation](#overview--motivation)
-* [Types of Graphical Models](#types-of-graphical-models)
-  * [\[a\] Bayesian Networks (Directed)](#a-bayesian-networks-directed)
-  * [\[b\] Markov Networks (Undirected)](#b-markov-networks-undirected)
-* [Quick Examples](#quick-examples)
-  * [Directed PGM & OLS Regression](#directed-pgm--ols-regression)
-  * [Directed PGM & Naive Bayes](#directed-pgm--naive-bayes)
-* [A. Representation](#a-representation)
-  * [1. Bayesian Network](#1-bayesian-network)
-    * [Evidence & Conditioning Patterns](#evidence--conditioning-patterns)
-    * [D-Separation (Explaining Away)](#d-separation-explaining-away)
-    * [Template Models & Global Structure](#template-models--global-structure)
-    * [Local Structure in CPDs](#local-structure-in-cpds)
-  * [2. Markov Network](#2-markov-network)
-* [B. Inference](#b-inference)
-  * [Inference 01: Exact Inference (Enumeration & Variable Elimination)](#inference-01-exact-inference-enumeration--variable-elimination)
-  * [Inference 02: Approximate Inference via Sampling](#inference-02-approximate-inference-via-sampling)
-    * [1. Importance Sampling](#1-importance-sampling)
-    * [2. Inverse Transform Sampling](#2-inverse-transform-sampling)
-    * [3. Rejection Sampling](#3-rejection-sampling)
-    * [4. MCMC & Gibbs Sampling](#4-mcmc--gibbs-sampling)
-* [Bayesian Neural Networks (BNNs)](#bayesian-neural-networks-bnns)
-  * [Scaling & Stochastic Gradient Langevin Dynamics (SGLD)](#scaling--stochastic-gradient-langevin-dynamics-sgld)
-  * [Dynamic Bayesian Neural Networks](#dynamic-bayesian-neural-networks)
-* [Python Code Examples](#python-code-examples)
-  * [1. Bayesian Network & Exact Inference (`pgmpy`)](#1-bayesian-network--exact-inference-pgmpy)
-  * [2. Importance & Rejection Sampling (`numpy`)](#2-importance--rejection-sampling-numpy)
-  * [3. Gibbs Sampling (`numpy`)](#3-gibbs-sampling-numpy)
-  * [4. Stochastic Gradient Langevin Dynamics (`torch`)](#4-stochastic-gradient-langevin-dynamics-torch)
-
----
+- [Overview & Motivation](#overview--motivation)
+- [Types of Graphical Models](#types-of-graphical-models)
+  - [[a] Bayesian Networks (Directed)](#a-bayesian-networks-directed)
+  - [[b] Markov Networks (Undirected)](#b-markov-networks-undirected)
+- [Quick Examples](#quick-examples)
+  - [Directed PGM & OLS Regression](#directed-pgm--ols-regression)
+  - [Directed PGM & Naive Bayes](#directed-pgm--naive-bayes)
+- [A. Representation](#a-representation)
+  - [1. Bayesian Network](#1-bayesian-network)
+    - [Evidence & Conditioning Patterns](#evidence--conditioning-patterns)
+    - [D-Separation (Explaining Away)](#d-separation-explaining-away)
+    - [Template Models & Global Structure](#template-models--global-structure)
+    - [Local Structure in CPDs](#local-structure-in-cpds)
+  - [2. Markov Network](#2-markov-network)
+- [B. Inference](#b-inference)
+  - [Inference 01: Exact Inference (Enumeration & Variable Elimination)](#inference-01-exact-inference-enumeration--variable-elimination)
+  - [Inference 02: Approximate Inference via Sampling](#inference-02-approximate-inference-via-sampling)
+    - [1. Importance Sampling](#1-importance-sampling)
+    - [2. Inverse Transform Sampling](#2-inverse-transform-sampling)
+    - [3. Rejection Sampling](#3-rejection-sampling)
+    - [4. MCMC & Gibbs Sampling](#4-mcmc--gibbs-sampling)
+- [Bayesian Neural Networks (BNNs)](#bayesian-neural-networks-bnns)
+  - [Scaling & Stochastic Gradient Langevin Dynamics (SGLD)](#scaling--stochastic-gradient-langevin-dynamics-sgld)
+  - [Dynamic Bayesian Neural Networks](#dynamic-bayesian-neural-networks)
+- [Python Code Examples](#python-code-examples)
+  - [1. Bayesian Network & Exact Inference (`pgmpy`)](#1-bayesian-network--exact-inference-pgmpy)
+  - [2. Importance & Rejection Sampling (`numpy`)](#2-importance--rejection-sampling-numpy)
+  - [3. Gibbs Sampling (`numpy`)](#3-gibbs-sampling-numpy)
+  - [4. Stochastic Gradient Langevin Dynamics (`torch`)](#4-stochastic-gradient-langevin-dynamics-torch)
 
 ## Overview & Motivation
 
@@ -64,11 +62,11 @@ flowchart LR
     end
 ```
 
-* **Independent vs. Dependent Data:** Standard classifiers often treat data points as independent (e.g., predicting whether an image contains a cat or a dog). In sequential or structured domains—such as `"I"`, `"like"`, `"machine"`, `"learning"`—words depend on context (`"learning"` can act as a noun or verb depending on surrounding tokens). PGMs provide a structured framework to model these **dependencies**.
-* **Graph Components:** A PGM combines a graph with probability theory:
-  * **Nodes (vertices):** Represent random variables.
-  * **Edges:** Encode probabilistic relationships and dependencies between variables.
-* **Core Advantages:**
+- **Independent vs. Dependent Data:** Standard classifiers often treat data points as independent (e.g., predicting whether an image contains a cat or a dog). In sequential or structured domains—such as `"I"`, `"like"`, `"machine"`, `"learning"`—words depend on context (`"learning"` can act as a noun or verb depending on surrounding tokens). PGMs provide a structured framework to model these **dependencies**.
+- **Graph Components:** A PGM combines a graph with probability theory:
+  - **Nodes (vertices):** Represent random variables.
+  - **Edges:** Encode probabilistic relationships and dependencies between variables.
+- **Core Advantages:**
   1. **Compact & Intuitive Representation:** Captures high-dimensional joint distributions clearly.
   2. **General-Purpose Inference:** Supports systematic probabilistic reasoning and querying via graph algorithms.
   3. **Parameter Efficiency:** Factorizing along conditional independencies drastically reduces the number of parameters needed compared to a full joint table—by dropping unnecessary edges whenever conditional independence holds.
@@ -76,35 +74,33 @@ flowchart LR
 ```mermaid
 graph LR
     subgraph Full["Full Joint (No Independence): 2^4 - 1 = 15 params"]
-        A1((A)) --> B1((B))
-        A1 --> C1((C))
-        A1 --> D1((D))
+        A1(("A")) --> B1(("B"))
+        A1 --> C1(("C"))
+        A1 --> D1(("D"))
         B1 --> C1
         B1 --> D1
         C1 --> D1
     end
     subgraph Sparse["Factorized DAG (Drop Edges): 1 + 2 + 2 + 2 = 7 params"]
-        A2((A)) --> B2((B))
-        B2 --> C2((C))
-        C2 --> D2((D))
+        A2(("A")) --> B2(("B"))
+        B2 --> C2(("C"))
+        C2 --> D2(("D"))
     end
 ```
-
----
 
 ## Types of Graphical Models
 
 Depending on whether edges are **directed** or **undirected**, graphical models fall into two main families:
 
-### \[a\] Bayesian Networks (Directed)
+### [a] Bayesian Networks (Directed)
 
 Defined over an ordered **Directed Acyclic Graph (DAG)** representing a joint distribution $P(X_1, X_2, \dots, X_n)$. While variables may be marginally dependent, encoding **conditional independence** simplifies how the joint distribution factors.
 
 ```mermaid
 graph TD
-    C((C)) --> A((A))
-    C --> B((B))
-    A --> D((D))
+    C(("C")) --> A(("A"))
+    C --> B(("B"))
+    A --> D(("D"))
     B --> D
 ```
 
@@ -112,24 +108,18 @@ graph TD
 
 Using the chain rule of probability:
 
-$$
-P(a, b, c) = P(a \mid b, c)\,P(b, c) = P(a \mid b, c)\,P(b \mid c)\,P(c)
-$$
+$$P(a, b, c) = P(a \mid b, c)\,P(b, c) = P(a \mid b, c)\,P(b \mid c)\,P(c)$$
 
-$$
-P(a, b, c) = P(a, b \mid c)\,P(c)
-$$
+$$P(a, b, c) = P(a, b \mid c)\,P(c)$$
 
-* **Conditional vs. Joint under conditioning:**
-  * Conditional decomposition: $P(a \mid b, C) = \dfrac{P(a, b \mid C)}{P(b \mid C)}$
-  * Joint decomposition: $P(a, b \mid C) = P(a \mid b, C)\,P(b \mid C)$
-* **Notation Rule:** If a conditioning bar `|` is already present, append additional conditioning variables after a comma; otherwise introduce `|` before the conditioning variable(s).
+- **Conditional vs. Joint under conditioning:**
+  - Conditional decomposition: $P(a \mid b, C) = \dfrac{P(a, b \mid C)}{P(b \mid C)}$
+  - Joint decomposition: $P(a, b \mid C) = P(a \mid b, C)\,P(b \mid C)$
+- **Notation Rule:** If a conditioning bar `|` is already present, append additional conditioning variables after a comma; otherwise introduce `|` before the conditioning variable(s).
 
-### \[b\] Markov Networks (Undirected)
+### [b] Markov Networks (Undirected)
 
 Use an **undirected graph** to model symmetric interactions and potential functions (clique factors) rather than directed causal edges.
-
----
 
 ## Quick Examples
 
@@ -137,9 +127,7 @@ Use an **undirected graph** to model symmetric interactions and potential functi
 
 In Ordinary Least Squares (OLS) linear regression, outputs $y_i$ are generated from inputs $\mathbf{x}_i$, weights $\mathbf{w}$, and Gaussian noise variance $\sigma^2$:
 
-$$
-y_i \mid \mathbf{x}_i, \mathbf{w}, \sigma^2 \sim \mathcal{N}(\mathbf{w}^\top \mathbf{x}_i, \sigma^2)
-$$
+$$y_i \mid \mathbf{x}_i, \mathbf{w}, \sigma^2 \sim \mathcal{N}(\mathbf{w}^{\top} \mathbf{x}_i, \sigma^2)$$
 
 ```mermaid
 graph TD
@@ -152,9 +140,7 @@ graph TD
 
 In a **Naive Bayes** graphical model, a single class node $Y$ acts as the parent of conditionally independent feature nodes $X_1, X_2, \dots, X_n$ given $Y$:
 
-$$
-P(Y, X_1, \dots, X_n) = P(Y)\prod_{i=1}^{n} P(X_i \mid Y)
-$$
+$$P(Y, X_1, \dots, X_n) = P(Y)\prod_{i=1}^{n} P(X_i \mid Y)$$
 
 ```mermaid
 graph TD
@@ -164,42 +150,38 @@ graph TD
     Y --> Xn(("X_n"))
 ```
 
----
-
 # A. Representation
 
 ## 1. Bayesian Network
 
 ```mermaid
 graph TD
-    X1((X_1)) --> X3((X_3))
-    X2((X_2)) --> X3
-    X2 --> X4((X_4))
-    X3 --> X5((X_5))
+    X1(("X_1")) --> X3(("X_3"))
+    X2(("X_2")) --> X3
+    X2 --> X4(("X_4"))
+    X3 --> X5(("X_5"))
     X4 --> X5
 ```
 
 A **Bayesian Network** represents a joint probability distribution over random variables $X_1, X_2, \dots, X_n$ using a **DAG**:
 
-$$
-P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P\big(X_i \mid \text{Pa}(X_i)\big)
-$$
+$$P(X_1, X_2, \dots, X_n) = \prod_{i=1}^{n} P\big(X_i \mid \text{Pa}(X_i)\big)$$
 
 where $\text{Pa}(X_i)$ denotes the parents of $X_i$ in the graph.
 
-* Marries **uncertainty** with structured graph factorization.
-* Makes direct and indirect influences between uncertain variables transparent.
+- Marries **uncertainty** with structured graph factorization.
+- Makes direct and indirect influences between uncertain variables transparent.
 
 ### Evidence & Conditioning Patterns
 
-* **Single Observation:**
+- **Single Observation:**
 
 ```mermaid
 graph LR
     C(("Cause (C)")) --> R1(("result01"))
 ```
 
-* **Multiple Observations (`result01`, `result02`, ...):**
+- **Multiple Observations (`result01`, `result02`, ...):**
 
 ```mermaid
 graph TD
@@ -208,8 +190,9 @@ graph TD
     C --> R3(("result03"))
 ```
 
-* **Conditional Independence Across Observations:** Given a common cause/parent $C$, its children are conditionally independent:
-  $$P(\text{result02} \mid \text{result01}, C) = P(\text{result02} \mid C)$$
+- **Conditional Independence Across Observations:** Given a common cause/parent $C$, its children are conditionally independent:
+
+$$P(\text{result02} \mid \text{result01}, C) = P(\text{result02} \mid C)$$
 
 ```mermaid
 graph TD
@@ -218,7 +201,7 @@ graph TD
     style C fill:#d4edda,stroke:#28a745,stroke-width:2px
 ```
 
-* **Multiple Latent Variables (Hidden Causes):**
+- **Multiple Latent Variables (Hidden Causes):**
 
 ```mermaid
 graph TD
@@ -236,8 +219,8 @@ Rather than enumerating every joint state combination explicitly, each node defi
 
 | Representation | Number of Parameters ($n$ binary variables) | Growth Rate |
 | :--- | :--- | :--- |
-| Full Joint Probability Table | $2^n - 1$ | Exponential $\mathcal{O}(2^n)$ |
-| Bayesian Network (max $k$ parents/node) | $\le n \cdot 2^k$ | Linear in $n$ for bounded $k$ |
+| Full Joint Probability Table | $2^{n} - 1$ | Exponential $\mathcal{O}(2^{n})$ |
+| Bayesian Network (max $k$ parents/node) | $\le n \cdot 2^{k}$ | Linear in $n$ for bounded $k$ |
 
 ### Worked Example
 
@@ -249,9 +232,7 @@ graph TD
     A --> M(("MaryCalls (M)"))
 ```
 
-$$
-P(B, E, A, J, M) = P(B)\,P(E)\,P(A \mid B, E)\,P(J \mid A)\,P(M \mid A)
-$$
+$$P(B, E, A, J, M) = P(B)\,P(E)\,P(A \mid B, E)\,P(J \mid A)\,P(M \mid A)$$
 
 ### D-Separation (Explaining Away)
 
@@ -265,36 +246,34 @@ graph TD
     style C fill:#f8d7da,stroke:#dc3545,stroke-width:2px
 ```
 
----
-
 ### Template Models & Global Structure
 
 **Template Models** extend graphical models to handle repeated variables, time series, and shared structure across instances or time steps:
 
-* Replicate **template variables** and share **CPDs (parameter sharing)** across repeated instances.
-* Act as a compact specification of a larger unrolled ("ground") Bayesian network without increasing expressiveness beyond the unrolled DAG.
-* Common examples include **Dynamic Bayesian Networks (DBNs)** for temporal sequences and **Object-Relational Models** (directed or undirected).
+- Replicate **template variables** and share **CPDs (parameter sharing)** across repeated instances.
+- Act as a compact specification of a larger unrolled ("ground") Bayesian network without increasing expressiveness beyond the unrolled DAG.
+- Common examples include **Dynamic Bayesian Networks (DBNs)** for temporal sequences and **Object-Relational Models** (directed or undirected).
 
 ```mermaid
 graph LR
     subgraph Slice_t0["Time t = 0"]
-        S0((S_0)) --> O0((O_0))
+        S0(("S_0")) --> O0(("O_0"))
     end
     subgraph Slice_t1["Time t = 1"]
-        S1((S_1)) --> O1((O_1))
+        S1(("S_1")) --> O1(("O_1"))
     end
     subgraph Slice_t2["Time t = 2"]
-        S2((S_2)) --> O2((O_2))
+        S2(("S_2")) --> O2(("O_2"))
     end
     S0 --> S1
     S1 --> S2
 ```
 
-* **Temporal Models (DBNs & HMMs):**
-  * **Dynamic Bayesian Networks (DBNs)** unroll a template network across discrete time slices to model evolving systems.
-  * **Hidden Markov Models (HMMs)** are a specialized subclass with latent state chains and observations at each step.
-* **Plate Models:**
-  * Enclose repeated/indexed variables inside a **plate** (a box indicating indexing over items such as trials, users, or documents). Parameters outside all plates are shared across the replicated variables.
+- **Temporal Models (DBNs & HMMs):**
+  - **Dynamic Bayesian Networks (DBNs)** unroll a template network across discrete time slices to model evolving systems.
+  - **Hidden Markov Models (HMMs)** are a specialized subclass with latent state chains and observations at each step.
+- **Plate Models:**
+  - Enclose repeated/indexed variables inside a **plate** (a box indicating indexing over items such as trials, users, or documents). Parameters outside all plates are shared across the replicated variables.
 
 ```mermaid
 graph TD
@@ -304,8 +283,8 @@ graph TD
     end
 ```
 
-* **Index Subset Rule:** For a template variable $A\{X_1, \dots, X_k\}$ indexed by $X$, parent template variables (such as $B$ indexed by $U$) must have indices compatible with the child's scope so that grounding produces a valid dependency graph.
-* **Ground Network:** Unrolling plates over concrete indices yields the **ground network**, enabling collective inference across correlated entities.
+- **Index Subset Rule:** For a template variable $A\{X_1, \dots, X_k\}$ indexed by $X$, parent template variables (such as $B$ indexed by $U$) must have indices compatible with the child's scope so that grounding produces a valid dependency graph.
+- **Ground Network:** Unrolling plates over concrete indices yields the **ground network**, enabling collective inference across correlated entities.
 
 ```mermaid
 graph TD
@@ -330,8 +309,6 @@ graph TD
     D --> E
 ```
 
----
-
 ### Local Structure in CPDs
 
 Instead of storing full tabular CPDs whose size grows exponentially with parent count, **local structure** parameterizes each node's CPD compactly:
@@ -352,8 +329,8 @@ A child variable is a deterministic function of its parents ($Y = f(\text{Pa}(Y)
 
 ```mermaid
 graph TD
-    X((X)) --> Y(("Y = f(X, Z)"))
-    Z((Z)) --> Y
+    X(("X")) --> Y(("Y = f(X, Z)"))
+    Z(("Z")) --> Y
 ```
 
 #### (b) Tree Structure & Multiplexer Model
@@ -369,7 +346,7 @@ graph TD
     X -- "X = 1" --> L2["P(Y) = [0.4, 0.6]"]
 ```
 
-* **Multiplexer Model:** Uses a selector/multiplexer variable $S$ to route dependencies to different parent subsets ($X_1$ vs. $X_2$), drastically cutting parameter counts.
+- **Multiplexer Model:** Uses a selector/multiplexer variable $S$ to route dependencies to different parent subsets ($X_1$ vs. $X_2$), drastically cutting parameter counts.
 
 ```mermaid
 graph TD
@@ -378,7 +355,7 @@ graph TD
     X2(("Input X_2")) --> Y
 ```
 
-* **Practical Application (Printer Troubleshooting):** A selector/routing variable (local vs. network print path) determines which failure factors apply, reducing parameter count (e.g., from 145 down to ~55 in a classic diagnostic example).
+- **Practical Application (Printer Troubleshooting):** A selector/routing variable (local vs. network print path) determines which failure factors apply, reducing parameter count (e.g., from 145 down to ~55 in a classic diagnostic example).
 
 ```mermaid
 graph TD
@@ -395,54 +372,46 @@ Models **independence of causal influence**, where multiple parents $X_1, \dots,
 
 ```mermaid
 graph TD
-    X0(("Leak X_0")) --> Z0((Z_0))
-    X1((X_1)) --> Z1((Z_1))
-    X2((X_2)) --> Z2((Z_2))
-    Xk((X_k)) --> Zk((Z_k))
+    X0(("Leak X_0")) --> Z0(("Z_0"))
+    X1(("X_1")) --> Z1(("Z_1"))
+    X2(("X_2")) --> Z2(("Z_2"))
+    Xk(("X_k")) --> Zk(("Z_k"))
     Z0 --> Y(("Y (OR / AND Aggregator)"))
     Z1 --> Y
     Z2 --> Y
     Zk --> Y
 ```
 
-* **Noisy-OR:** $Y$ becomes true if at least one active cause (or a background leak factor) succeeds in turning it on:
+- **Noisy-OR:** $Y$ becomes true if at least one active cause (or a background leak factor) succeeds in turning it on:
 
-$$
-P(Y = 1 \mid \mathbf{x}) = 1 - (1 - \lambda_0)\prod_{i : x_i = 1} (1 - \lambda_i)
-$$
+$$P(Y = 1 \mid \mathbf{x}) = 1 - (1 - \lambda_0)\prod_{i : x_i = 1} (1 - \lambda_i)$$
 
-* **Noisy-AND (and Noisy-MAX):** Aggregates independent causal contributions $Z_i$ into a combined effect to determine $Y$.
+- **Noisy-AND (and Noisy-MAX):** Aggregates independent causal contributions $Z_i$ into a combined effect to determine $Y$.
 
 #### (d) Logistic Structure
 
 Computes a linear combination of parent influences plus a bias term $w_0$, then passes the result through a sigmoid function:
 
-$$
-z = w_0 + \sum_{i} w_i x_i, \qquad P(Y = 1 \mid \mathbf{x}) = \sigma(z) = \frac{1}{1 + e^{-z}}
-$$
+$$z = w_0 + \sum_{i} w_i x_i, \qquad P(Y = 1 \mid \mathbf{x}) = \sigma(z) = \frac{1}{1 + e^{-z}}$$
 
 ```mermaid
 graph LR
-    X1((X_1)) -- "w_1" --> Sum(("z = w_0 + sum(w_i X_i)"))
-    X2((X_2)) -- "w_2" --> Sum
-    Xk((X_k)) -- "w_k" --> Sum
-    Sum --> Sig["Sigmoid sigma(z)"] --> Y((Y))
+    X1(("X_1")) -- "w_1" --> Sum(("z = w_0 + sum(w_i X_i)"))
+    X2(("X_2")) -- "w_2" --> Sum
+    Xk(("X_k")) -- "w_k" --> Sum
+    Sum --> Sig["Sigmoid sigma(z)"] --> Y(("Y"))
 ```
 
 #### (e) Continuous Structure
 
 Used when variables are continuous—for example, modeling a noisy sensor measurement around an underlying continuous temperature using a Gaussian (normal) distribution:
 
-$$
-p(y \mid x) = \mathcal{N}\!\left(y;\, \mu_0 + w x,\, \sigma^2\right)
-$$
+$$p(y \mid x) = \mathcal{N}\!\left(y;\, \mu_0 + w x,\, \sigma^{2}\right)$$
 
 ```mermaid
 graph LR
     T(("True Temperature (Continuous)")) --> S(("Sensor Reading ~ N(T, sigma^2)"))
 ```
-
----
 
 ## 2. Markov Network
 
@@ -450,9 +419,9 @@ A **Markov Network** (Markov Random Field) uses an **undirected graph** $G = (V,
 
 ```mermaid
 graph TD
-    X1((X_1)) --- X2((X_2))
-    X2 --- X3((X_3))
-    X3 --- X4((X_4))
+    X1(("X_1")) --- X2(("X_2"))
+    X2 --- X3(("X_3"))
+    X3 --- X4(("X_4"))
     X4 --- X1
     X1 --- X3
 ```
@@ -461,9 +430,7 @@ graph TD
 
 The joint distribution factorizes over maximal cliques (or factor potentials $\phi_c(\mathbf{x}_c)$):
 
-$$
-P(\mathbf{x}) = \frac{1}{Z} \prod_{c \in \mathcal{C}} \phi_c(\mathbf{x}_c), \qquad Z = \sum_{\mathbf{x}} \prod_{c \in \mathcal{C}} \phi_c(\mathbf{x}_c)
-$$
+$$P(\mathbf{x}) = \frac{1}{Z} \prod_{c \in \mathcal{C}} \phi_c(\mathbf{x}_c), \qquad Z = \sum_{\mathbf{x}} \prod_{c \in \mathcal{C}} \phi_c(\mathbf{x}_c)$$
 
 where $Z$ is the **partition function** (normalizing constant). Unlike Bayesian networks, edges in a Markov network represent symmetric affinity rather than causal direction.
 
@@ -471,13 +438,9 @@ where $Z$ is the **partition function** (normalizing constant). Unlike Bayesian 
 
 Factor potentials $\phi_c(\mathbf{x}_c) > 0$ are commonly parameterized in log-linear (energy-based) form:
 
-$$
-\phi_c(\mathbf{x}_c) = \exp\big(-E_c(\mathbf{x}_c)\big) = \exp\!\left(\sum_k w_k f_k(\mathbf{x}_c)\right)
-$$
+$$\phi_c(\mathbf{x}_c) = \exp\big(-E_c(\mathbf{x}_c)\big) = \exp\!\left(\sum_k w_k f_k(\mathbf{x}_c)\right)$$
 
 using feature functions $f_k$ and weights $w_k$, reducing parameter count when features are shared across cliques or spatial positions.
-
----
 
 # B. Inference
 
@@ -498,12 +461,11 @@ Common inference tasks include:
 
 **Enumeration** computes $P(Q \mid \mathbf{E} = \mathbf{e})$ by summing joint probabilities over all hidden (non-query, non-evidence) variables $\mathbf{H}$:
 
-$$
-P(Q \mid \mathbf{E} = \mathbf{e}) = \frac{P(Q, \mathbf{E} = \mathbf{e})}{P(\mathbf{E} = \mathbf{e})} = \frac{\sum_{\mathbf{h}} P(Q, \mathbf{E} = \mathbf{e}, \mathbf{H} = \mathbf{h})}{\sum_{q', \mathbf{h}} P(Q = q', \mathbf{E} = \mathbf{e}, \mathbf{H} = \mathbf{h})}
-$$
+$$P(Q \mid \mathbf{E} = \mathbf{e}) = \frac{P(Q, \mathbf{E} = \mathbf{e})}{P(\mathbf{E} = \mathbf{e})} = \frac{\sum_{\mathbf{h}} P(Q, \mathbf{E} = \mathbf{e}, \mathbf{H} = \mathbf{h})}{\sum_{q', \mathbf{h}} P(Q = q', \mathbf{E} = \mathbf{e}, \mathbf{H} = \mathbf{h})}$$
 
-* **Example (Burglary / Alarm / John & Mary):** Given evidence that both John and Mary called, summing over the hidden variables yields:
-  $$P(\text{Burglary} = \text{True} \mid \text{JohnCalls}, \text{MaryCalls}) \approx 0.284$$
+- **Example (Burglary / Alarm / John & Mary):** Given evidence that both John and Mary called, summing over the hidden variables yields:
+
+$$P(\text{Burglary} = \text{True} \mid \text{JohnCalls}, \text{MaryCalls}) \approx 0.284$$
 
 ```mermaid
 graph TD
@@ -544,22 +506,18 @@ flowchart LR
 
 When sampling directly from $P(x)$ is difficult, draw samples from a **proposal distribution** $q(x)$ and weight each sample by $w(x) = \frac{P(x)}{q(x)}$:
 
-$$
-\mathbb{E}_{P}[f(X)] = \int f(x)\frac{P(x)}{q(x)} q(x)\,dx \approx \frac{1}{N}\sum_{i=1}^{N} \frac{P(x^{(i)})}{q(x^{(i)})} f(x^{(i)}), \quad x^{(i)} \sim q(x)
-$$
+$$\mathbb{E}_{P}[f(X)] = \int f(x)\frac{P(x)}{q(x)} q(x)\,dx \approx \frac{1}{N}\sum_{i=1}^{N} \frac{P(x^{(i)})}{q(x^{(i)})} f(x^{(i)}), \quad x^{(i)} \sim q(x)$$
 
 If $P(x) = \tilde{P}(x)/Z_P$ and $q(x) = \tilde{q}(x)/Z_q$ have unknown normalizing constants, **self-normalized importance sampling** uses unnormalized weights $\tilde{w}(x) = \frac{\tilde{P}(x)}{\tilde{q}(x)}$:
 
-$$
-\mathbb{E}_{P}[f(X)] \approx \frac{\sum_{i=1}^{N} \tilde{w}(x^{(i)}) f(x^{(i)})}{\sum_{i=1}^{N} \tilde{w}(x^{(i)})}
-$$
+$$\mathbb{E}_{P}[f(X)] \approx \frac{\sum_{i=1}^{N} \tilde{w}(x^{(i)}) f(x^{(i)})}{\sum_{i=1}^{N} \tilde{w}(x^{(i)})}$$
 
 ### 2. Inverse Transform Sampling
 
 Given a target distribution with Cumulative Distribution Function (CDF) $F_X(x)$:
 
-* **Invertible CDF:** Draw $u \sim \text{Uniform}(0, 1)$ and set $x = F_X^{-1}(u)$.
-* **Non-invertible / Discrete CDF:** Partition $[0, 1)$ into intervals corresponding to cumulative probability masses and map $u$ to the matching interval/value.
+- **Invertible CDF:** Draw $u \sim \text{Uniform}(0, 1)$ and set $x = F_X^{-1}(u)$.
+- **Non-invertible / Discrete CDF:** Partition $[0, 1)$ into intervals corresponding to cumulative probability masses and map $u$ to the matching interval/value.
 
 ```mermaid
 flowchart LR
@@ -568,8 +526,8 @@ flowchart LR
 
 ### 3. Rejection Sampling
 
-* **Discrete / Set Sampling:** Sample uniformly from an enclosing bounding region and keep points falling inside the target set.
-* **Continuous / Density Sampling:** Draw candidate samples $x \sim q(x)$ from a tractable proposal scaled by $M$ so $M\,q(x) \ge \tilde{p}(x)$, and accept each draw with probability $\frac{\tilde{p}(x)}{M\,q(x)}$.
+- **Discrete / Set Sampling:** Sample uniformly from an enclosing bounding region and keep points falling inside the target set.
+- **Continuous / Density Sampling:** Draw candidate samples $x \sim q(x)$ from a tractable proposal scaled by $M$ so $M\,q(x) \ge \tilde{p}(x)$, and accept each draw with probability $\frac{\tilde{p}(x)}{M\,q(x)}$.
 
 ```mermaid
 flowchart TD
@@ -584,14 +542,16 @@ flowchart TD
 
 ```mermaid
 graph LR
-    X0((x^(0))) -- "Transition T" --> X1((x^(1)))
-    X1 -- "Transition T" --> X2((x^(2)))
-    X2 -- "..." --> Xt((x^(t) ~ P(x)))
+    X0(("x^(0)")) -- "Transition T" --> X1(("x^(1)"))
+    X1 -- "Transition T" --> X2(("x^(2)"))
+    X2 -- "..." --> Xt(("x^(t) ~ P(x)"))
 ```
 
-* **Metropolis & Metropolis–Hastings:** Propose a candidate state $x'$ from $q(x' \mid x)$ and accept with probability:
-  $$\alpha = \min\!\left(1, \frac{\tilde{p}(x')\,q(x \mid x')}{\tilde{p}(x)\,q(x' \mid x)}\right)$$
-* **Gibbs Sampling:** Updates one variable (or block) at a time by sampling from its full conditional distribution $P(x_i \mid \mathbf{x}_{-i})$ given the current values of all other variables.
+- **Metropolis & Metropolis–Hastings:** Propose a candidate state $x'$ from $q(x' \mid x)$ and accept with probability:
+
+$$\alpha = \min\!\left(1, \frac{\tilde{p}(x')\,q(x \mid x')}{\tilde{p}(x)\,q(x' \mid x)}\right)$$
+
+- **Gibbs Sampling:** Updates one variable (or block) at a time by sampling from its full conditional distribution $P(x_i \mid \mathbf{x}_{-i})$ given the current values of all other variables.
 
 ```mermaid
 flowchart LR
@@ -600,28 +560,22 @@ flowchart LR
     Step2 --> Next["Next State (theta^(t+1), phi^(t+1))"]
 ```
 
----
-
 ## Bayesian Neural Networks (BNNs)
 
 Standard neural networks learn **point estimates** of weights $\mathbf{w}$, which often yield overconfident predictions in regions with scarce or out-of-distribution data. **Bayesian Neural Networks** place a **prior** $p(\mathbf{w})$ over weights and infer a **posterior** $p(\mathbf{w} \mid \mathcal{D})$ given data $\mathcal{D}$:
 
-$$
-p(\mathbf{w} \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \mathbf{w})\,p(\mathbf{w})}{p(\mathcal{D})}
-$$
+$$p(\mathbf{w} \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \mathbf{w})\,p(\mathbf{w})}{p(\mathcal{D})}$$
 
 Predictions marginalize over weight uncertainty:
 
-$$
-p(y^* \mid \mathbf{x}^*, \mathcal{D}) = \int p(y^* \mid \mathbf{x}^*, \mathbf{w})\,p(\mathbf{w} \mid \mathcal{D})\,d\mathbf{w}
-$$
+$$p(y_{\text{new}} \mid \mathbf{x}_{\text{new}}, \mathcal{D}) = \int p(y_{\text{new}} \mid \mathbf{x}_{\text{new}}, \mathbf{w})\,p(\mathbf{w} \mid \mathcal{D})\,d\mathbf{w}$$
 
 ```mermaid
 graph LR
     Prior["Prior p(w)"] --> Post["Posterior p(w | D)"]
     Data["Dataset D"] --> Lik["Likelihood p(D | w)"]
     Lik --> Post
-    Post --> Pred["Predictive Distribution p(y* | x*, D)"]
+    Post --> Pred["Predictive Distribution p(y_new | x_new, D)"]
 ```
 
 ### Scaling & Stochastic Gradient Langevin Dynamics (SGLD)
@@ -630,28 +584,24 @@ Exact posterior inference is intractable for deep networks, so practitioners rel
 
 **Stochastic Gradient Langevin Dynamics (SGLD)** combines minibatch stochastic gradients with injected Gaussian noise $\boldsymbol{\eta}_t \sim \mathcal{N}(\mathbf{0}, \epsilon_t \mathbf{I})$ so parameter updates converge toward samples from the posterior:
 
-$$
-\Delta \mathbf{w}_t = \frac{\epsilon_t}{2}\left(\nabla \log p(\mathbf{w}_t) + \frac{N}{n}\sum_{i \in \mathcal{B}_t} \nabla \log p(y_i \mid \mathbf{x}_i, \mathbf{w}_t)\right) + \boldsymbol{\eta}_t
-$$
+$$\Delta \mathbf{w}_t = \frac{\epsilon_t}{2}\left(\nabla \log p(\mathbf{w}_t) + \frac{N}{n}\sum_{i \in \mathcal{B}_t} \nabla \log p(y_i \mid \mathbf{x}_i, \mathbf{w}_t)\right) + \boldsymbol{\eta}_t$$
 
 #### Limitations of Gibbs Sampling in BNNs
 
-* **High Dimensionality:** Updating one weight coordinate at a time scales poorly when a network has millions of parameters.
-* **Minibatch Constraints:** Standard Gibbs updates typically require full-dataset conditionals rather than minibatch stochastic estimates.
-* **Burn-In Cost:** Chains require convergence during training, though collected posterior weight samples can be reused at test time for uncertainty-aware ensembling.
+- **High Dimensionality:** Updating one weight coordinate at a time scales poorly when a network has millions of parameters.
+- **Minibatch Constraints:** Standard Gibbs updates typically require full-dataset conditionals rather than minibatch stochastic estimates.
+- **Burn-In Cost:** Chains require convergence during training, though collected posterior weight samples can be reused at test time for uncertainty-aware ensembling.
 
 ### Dynamic Bayesian Neural Networks
 
-**Dynamic Bayesian Neural Networks** combine temporal Bayesian modeling across time steps $t-1 \to t$ with neural network parameterizations to capture non-linear state transitions and uncertainty over sequential data:
+**Dynamic Bayesian Neural Networks** combine temporal Bayesian modeling across time steps $t - 1 \to t$ with neural network parameterizations to capture non-linear state transitions and uncertainty over sequential data:
 
 ```mermaid
 graph LR
-    Z0((z_{t-1})) -- "Bayesian NN Transition" --> Z1((z_t))
-    Z0 -- "Emission" --> X0((x_{t-1}))
-    Z1 -- "Emission" --> X1((x_t))
+    Z0(("z_(t-1)")) -- "Bayesian NN Transition" --> Z1(("z_t"))
+    Z0 -- "Emission" --> X0(("x_(t-1)"))
+    Z1 -- "Emission" --> X1(("x_t"))
 ```
-
----
 
 ## Python Code Examples
 
